@@ -1,0 +1,7 @@
+a) Nombre de los participantes:
+
+b) Titulo del proyecto: 
+
+c) Muy breve descripción del proyecto: 
+
+d) Base de datos de imágenes que se usará (nombre y URL): 

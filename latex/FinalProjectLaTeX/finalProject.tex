@@ -1,0 +1,128 @@
+% CVPR 2022 Paper Template
+% based on the CVPR template provided by Ming-Ming Cheng (https://github.com/MCG-NKU/CVPR_Template)
+% modified and extended by Stefan Roth (stefan.roth@NOSPAMtu-darmstadt.de)
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+%%%%%%%%% PAPER TYPE  - PLEASE UPDATE FOR FINAL VERSION
+%\usepackage[review]{cvpr}      % To produce the REVIEW version
+\usepackage{cvpr}              % To produce the CAMERA-READY version
+%\usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
+% Include other packages here, before hyperref.
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+
+\newcommand{\latex}{\LaTeX\xspace}
+\newcommand{\tex}{\TeX\xspace}
+
+
+% It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, e.g. with the
+% file validation for the camera-ready version.
+%
+% If you comment hyperref and then uncomment it, you should delete
+% ReviewTempalte.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you
+%  should be clear).
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+
+
+% Support for easy cross-referencing
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\crefname{table}{Tab.}{Tabs.}
+
+
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\cvprPaperID{*****} % *** Enter the CVPR Paper ID here
+\def\confName{CVPR}
+\def\confYear{2022}
+
+
+\begin{document}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{Title of the Final Project}
+
+\author{First Author\\
+%Institution1\\
+%Institution1 address\\
+{\tt\small firstauthor@i1.org}
+% For a paper whose authors are all at the same institution,
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'',
+% just like the second author.
+% To save space, use either the email address or home page, not both
+\and
+Second Author\\
+%Institution2\\
+%First line of institution2 address\\
+{\tt\small secondauthor@i2.org}
+\and
+Third Author\\
+{\tt\small thirdauthor@i2.org}
+\and
+Fourth Author\\
+{\tt\small fourthauthor@i2.org}
+}
+\maketitle
+
+%%%%%%%%% ABSTRACT
+\begin{abstract}
+   Brief summary of the work developed as well as the main results and contributions. 
+   
+   
+\end{abstract}
+
+%%%%%%%%% BODY TEXT
+\section{Introduction}
+\label{sec:intro}
+
+Here, the problem to be solved is described (what do we want to do?), the motivation (why is it relevant to do it?), and the goals (what specific objectives are we going to address in order to solve the problem?).
+
+We use the \LaTeX\  format of the \href{https://en.wikipedia.org/wiki/Conference_on_Computer_Vision_and_Pattern_Recognition}{CVPR} conference. This document can be written either in English or Spanish. 
+
+What follows is a tentative approximation of the sections the document should have. If students consider that they need others, as well as subdividing the sections into different subsections, they can do it without problem.
+
+Students can take inspiration from the \href{http://cs231n.stanford.edu/index.html}{cs231n} final projects website: \url{http://cs231n.stanford.edu/project.html}, where different projects are presented and developed. 
+
+This whole final report can have from 6 to 8 pages (no more and no less). 
+
+\section{Background}
+
+This section presents the fundamental concepts necessary to understand the work.
+
+
+\section{Related Works}
+
+It presents what has been done in the field previously, and what the best methods are currently. It is very important, in general, not only in this section, to adequately document the relevant literature. To do this, you must use the $.bib$ file, in the way I show here: \cite{mesejo2016computer, lathuiliere2019comprehensive, vargas2023deep}
+
+\section{Methods}
+
+Detailed description of the methods used and/or proposed, and clear justification of why these methods are used and not others.
+
+\section{Experiments}
+
+The data used, the experimental validation protocol, the metrics used, the experiments carried out, the results obtained, and their discussion are presented here.
+
+\subsection{Dataset}
+
+\section{Conclusions}
+
+Section that presents, briefly and as a summary, the main conclusions of the work carried out. It also usually includes future possible works. That is, what are the most promising lines to continue with this work, as well as possible proposals for improvement. IMPORTANT: these are the scientific conclusions reached in the project; not your personal conclusions about the work you have done!
+
+
+
+%%%%%%%%% REFERENCES
+{\small
+\bibliographystyle{ieee_fullname}
+\bibliography{egbib}
+}
+
+\end{document}
