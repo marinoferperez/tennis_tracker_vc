@@ -1,0 +1,6 @@
+- [THETIS (Three-dimEnsional TennIs Shots) – Conjunto de vídeo de acciones de tenis](https://github.com/THETIS-dataset/dataset)  
+  Capturado por dispositivo Kinect, con 8.374 secuencias de vídeo de 55 sujetos. [oai_citation:0‡GitHub](https://github.com/THETIS-dataset/dataset)
+- [TrackNet Tennis – Dataset de seguimiento de pelota de tenis en pista](https://www.kaggle.com/datasets/sofuskonglevoll/tracknet-tennis)  
+  Contiene vídeos y anotaciones para detección y seguimiento de la pelota. [oai_citation:1‡Kaggle](https://www.kaggle.com/datasets/sofuskonglevoll/tracknet-tennis)
+- [Tennis Ball Detection – Dataset en Roboflow Universe](https://universe.roboflow.com/viren-dhanwani/tennis-ball-detection)  
+  Conjunto de imágenes anotadas para detección de pelota de tenis.
