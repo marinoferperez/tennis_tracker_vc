@@ -1,2 +1,1 @@
-# final_project_computervision
-proyecto final en grupo para la asignatura "visión por computadores"
+# Sistema de Detección y Seguimiento Automático de Jugadores y Pelota en Partidos de Tenis en Tiempo Real
