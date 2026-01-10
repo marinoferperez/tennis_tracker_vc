@@ -15,6 +15,8 @@
 \usepackage{amssymb}
 \usepackage{booktabs}
 
+
+
 \newcommand{\latex}{\LaTeX\xspace}
 \newcommand{\tex}{\TeX\xspace}
 
@@ -37,64 +39,60 @@
 \Crefname{section}{Section}{Sections}
 \Crefname{table}{Table}{Tables}
 \crefname{table}{Tab.}{Tabs.}
-
+\setlength{\parindent}{1.5em}
+\setlength{\parskip}{0.8em}
 
 %%%%%%%%% PAPER ID  - PLEASE UPDATE
 \def\cvprPaperID{*****} % *** Enter the CVPR Paper ID here
 \def\confName{CVPR}
-\def\confYear{2022}
+\def\confYear{2026}
 
 
 \begin{document}
 
 %%%%%%%%% TITLE - PLEASE UPDATE
-\title{Sistema de Detección y Seguimiento Automático de Jugadores y Pelota en Partidos de Tenis en Tiempo Real}
+\title{Sistema de Detección y Seguimiento Automático de Jugadores y Pelota en
+Partidos de Tenis en Tiempo Real}
 
-\author{Marino Fernández Pérez\\ 
-%Institution1\\
-%Institution1 address\\
+\author{
+Marino Fernández Pérez\\
 {\tt\small marinoferpe@correo.ugr.es}
-% For a paper whose authors are all at the same institution,
-% omit the following lines up until the closing ``}''.
-% Additional authors and addresses can be added with ``\and'',
-% just like the second author.
-% To save space, use either the email address or home page, not both
 \and
 Francesc Oliver Catany\\
-%Institution2\\
-%First line of institution2 address\\
 {\tt\small francescoliver@correo.ugr.es}
 \and
 Pau Bover Femenias\\
-{\tt\small paubovel@correo.ugr.es}
+{\tt\small paubover@correo.ugr.es}
 \and
 Gabriele Ruggeri\\
 {\tt\small gabricross37@correo.ugr.es}
+\\[1em]
+\textbf{Universidad de Granada (UGR)} - Visión por Computador
 }
+
+
 \maketitle
 
-%%%%%%%%% ABSTRACT
+%%%%%%%%% Resumen 
 \begin{abstract}
-   Brief summary of the work developed as well as the main results and contributions. 
-   
-   
+En este trabajo se presenta un sistema para el analisis automatico de un partido de tenis a partir de vídeo broadcast. El sistema es capaz de identificar la pista de juego, sus líneas y keypoints relevantes, así como detectar y seguir a los jugadores y la pelota a lo largo de la secuencia de vídeo. A partir de esta información, se estiman métricas cinemáticas como la velocidad y la distancia recorrida por los jugadores durante el partido.
+
+La solución propuesta integra múltiples modelos de aprendizaje profundo junto con técnicas clásicas de visión por computador, organizados en un pipeline modular y extensible. El sistema ha sido evaluado en vídeos reales de diferentes competiciones y tipos de pista, mostrando un funcionamiento robusto en escenarios variados. Aunque el procesamiento se realiza actualmente en un régimen de casi tiempo real, se discute su viabilidad para aplicaciones en tiempo real mediante optimizaciones adicionales. Los resultados obtenidos demuestran el potencial del enfoque propuesto como herramienta de análisis automático en el ámbito del tenis profesional.
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
-\section{Introduction}
+\section{Introducción}
 \label{sec:intro}
 
-Here, the problem to be solved is described (what do we want to do?), the motivation (why is it relevant to do it?), and the goals (what specific objectives are we going to address in order to solve the problem?).
+En el ámbito del tenis profesional, el análisis detallado del rendimiento tanto de jugadores propios como de rivales supone una tarea compleja y costosa para entrenadores y analistas. Gran parte de este análisis se realiza de forma manual o semiautomática, lo que dificulta la obtención de información objetiva y detallada a partir de grandes volúmenes de vídeo.
 
-We use the \LaTeX\  format of the \href{https://en.wikipedia.org/wiki/Conference_on_Computer_Vision_and_Pattern_Recognition}{CVPR} conference. This document can be written either in English or Spanish. 
+La resolución de este problema resulta relevante debido al creciente interés en el uso de herramientas basadas en inteligencia artificial para el análisis avanzado del rendimiento deportivo. La información recopilada por sistemas automáticos de detección y seguimiento permite desarrollar métricas complejas y estimaciones sobre el comportamiento de los jugadores durante el partido. Este tipo de análisis puede proporcionar una ventaja competitiva en el estudio de rivales, facilitando la identificación de patrones de juego y tendencias estratégicas. Además, este tipo de tecnología presenta un alto potencial de aplicación en retransmisiones televisivas, donde puede emplearse para ofrecer información visual y estadística de interés que enriquezca la experiencia de los espectadores.
 
-What follows is a tentative approximation of the sections the document should have. If students consider that they need others, as well as subdividing the sections into different subsections, they can do it without problem.
+El objetivo de este trabajo es desarrollar un sistema que permita detectar de manera automática información relevante a partir de partidos de tenis, de forma que cualquier usuario pueda utilizarlo para analizar vídeos y construir métricas y análisis avanzados basados en dicha información. 
 
-Students can take inspiration from the \href{http://cs231n.stanford.edu/index.html}{cs231n} final projects website: \url{http://cs231n.stanford.edu/project.html}, where different projects are presented and developed. 
+\subsection{Motivación personal}
 
-This whole final report can have from 6 to 8 pages (no more and no less). 
-
-\section{Background}
+\section{Contexto}
 
 This section presents the fundamental concepts necessary to understand the work.
 
