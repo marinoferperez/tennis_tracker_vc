@@ -14,11 +14,23 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{booktabs}
+\usepackage{float}
+\usepackage{forest}
 
+\usepackage{caption}
+
+\captionsetup[table]{
+  labelsep=newline,
+  justification=centering,
+  singlelinecheck=false
+}
 
 
 \newcommand{\latex}{\LaTeX\xspace}
 \newcommand{\tex}{\TeX\xspace}
+
+\renewcommand{\tablename}{TABLE}
+\renewcommand{\thetable}{\Roman{table}}
 
 
 % It is strongly recommended to use hyperref, especially for the review version.
@@ -39,8 +51,10 @@
 \Crefname{section}{Section}{Sections}
 \Crefname{table}{Table}{Tables}
 \crefname{table}{Tab.}{Tabs.}
-\setlength{\parindent}{1.5em}
-\setlength{\parskip}{0.8em}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0.5em}
+%\setlength{\intextsep}{0.5pt}
+
 
 %%%%%%%%% PAPER ID  - PLEASE UPDATE
 \def\cvprPaperID{*****} % *** Enter the CVPR Paper ID here
@@ -51,7 +65,7 @@
 \begin{document}
 
 %%%%%%%%% TITLE - PLEASE UPDATE
-\title{Sistema de Detección y Seguimiento Automático de Jugadores y Pelota en
+\title{Sistema de Detección de Líneas de Pista y Seguimiento Automático de Jugadores y Pelota en
 Partidos de Tenis en Tiempo Real}
 
 \author{
@@ -94,52 +108,506 @@ El objetivo de este trabajo es desarrollar un sistema que permita detectar de ma
 
 Elegimos este tema como proyecto porque nos pareció un campo especialmente amplio y estimulante, en el que era posible profundizar en muchos de los conceptos que más nos habían interesado a lo largo de la asignatura. El análisis de vídeo deportivo combina técnicas de aprendizaje profundo, procesamiento clásico de imágenes y geometría, lo que nos permitió aplicar de forma práctica conocimientos diversos que iremos detallando más adelante. Además, la complejidad real del problema y la necesidad de tomar decisiones de diseño fundamentadas lo convirtieron en un contexto idóneo para consolidar y ampliar lo aprendido durante el curso.
 
+
 \section{Contexto}
 
-El análisis automático de partidos de tenis a partir de secuencias de vídeo constituye un problema relevante dentro del ámbito de la visión por computador, al requerir la detección y el seguimiento de elementos dinámicos de la escena, como jugadores y pelota, así como la localización precisa de estructuras geométricas estáticas, en particular la pista. La combinación adecuada de técnicas de aprendizaje profundo con métodos clásicos de procesamiento de imagen resulta fundamental para abordar estos retos de forma robusta y coherente.
+El análisis automático de partidos de tenis a partir de secuencias de vídeo constituye un problema relevante dentro del ámbito de la visión por computador, requiere la detección y el seguimiento de elementos dinámicos, como jugadores y pelota, así como la localización de estructuras geométricas estáticas, en particular la pista. Para abordar estos retos de forma robusta, resulta fundamental combinar técnicas de aprendizaje profundo con métodos clásicos de procesamiento de imagen.
 
-En los últimos años, los modelos basados en aprendizaje profundo han mostrado un alto rendimiento en tareas de detección y seguimiento de objetos en tiempo real. Arquitecturas como YOLO se utilizan habitualmente para la detección de jugadores, mientras que redes especializadas como TrackNet han sido diseñadas para el seguimiento de objetos pequeños y de movimiento rápido, como la pelota. Asimismo, modelos de aprendizaje profundo se emplean para la detección de puntos clave relevantes de la pista, proporcionando estimaciones iniciales que pueden ser posteriormente refinadas. El uso de modelos ligeros permite además realizar inferencia eficiente, facilitando su integración en sistemas de análisis de vídeo deportivo.
+En los últimos años, los modelos basados en aprendizaje profundo han mostrado un alto rendimiento en tareas de detección y seguimiento de objetos en tiempo real. Arquitecturas como YOLO se utilizan habitualmente para la detección de jugadores, mientras que redes especializadas como TrackNet han sido diseñadas para el seguimiento de objetos pequeños en movimiento, como la pelota. Asimismo, modelos de aprendizaje profundo támbien se emplean para la detección de puntos clave relevantes de la pista,. El uso de modelos ligeros permite además realizar inferencia eficiente, facilitando su integración en sistemas de tiempo real.
 
-Por otro lado, la detección de las líneas de la pista presenta características distintas, ya que se trata de estructuras geométricas bien definidas y con una disposición regular. En este contexto, los métodos clásicos de procesamiento de imagen, como la Transformada de Hough, continúan siendo una alternativa eficaz, especialmente cuando se combinan con técnicas de preprocesado que reducen el ruido y mejoran la calidad geométrica de las detecciones.
+Por otro lado, la detección de las líneas de la pista presenta características distintas, ya que se trata de estructuras geométricas bien definidas y con una disposición regular. En este contexto, los métodos clásicos de procesamiento de imagen, como la Transformada de Hough, continúan siendo una alternativa eficaz, especialmente cuando se combinan con técnicas de preprocesado que reducen el ruido y mejoran la calidad geométrica.
 
-Finalmente, la relación entre la imagen capturada por la cámara y el plano real de la pista puede modelarse mediante técnicas de geometría proyectiva. El uso de homografías permite establecer una correspondencia entre ambos planos, posibilitando la superposición de modelos de referencia y la interpretación espacial de las posiciones detectadas. Para garantizar la fiabilidad de esta transformación, resulta esencial disponer de puntos clave precisos y geométricamente consistentes.
+Finalmente, la relación entre la imagen capturada por la cámara y el plano real de la pista puede modelarse mediante técnicas de geometría proyectiva. El uso de homografías permite establecer una correspondencia entre ambos planos, posibilitando la superposición de modelos de referencia y la interpretación espacial de las posiciones detectadas.
 
 
 \section{Trabajos Previos}
 
 El análisis automático de partidos de tenis ha sido objeto de un interés creciente en los últimos años, impulsado tanto por el desarrollo de técnicas de visión por computador como por la disponibilidad de modelos de aprendizaje profundo capaces de operar en tiempo real. Los trabajos previos en este ámbito pueden agruparse, de forma general, en tres grandes líneas: la detección y seguimiento de jugadores, el seguimiento de la pelota y la detección de la pista y sus líneas.
 
-En el ámbito del seguimiento de la pelota, uno de los trabajos más relevantes es \textit{TrackNet} \cite{huang2019tracknetdeeplearningnetwork}, una red neuronal profunda diseñada específicamente para el seguimiento de objetos pequeños y de alta velocidad en aplicaciones deportivas. TrackNet aborda el problema como una tarea de segmentación, generando mapas de probabilidad que indican la posición de la pelota en cada frame. Este enfoque ha demostrado ser especialmente eficaz en deportes como el tenis, donde la pelota ocupa un número muy reducido de píxeles y presenta movimientos rápidos y abruptos. Debido a su robustez y precisión, TrackNet se ha convertido en una referencia ampliamente utilizada en sistemas de análisis de tenis basados en vídeo.
+En el ámbito del seguimiento de la pelota, uno de los trabajos más relevantes es \textit{TrackNet} \cite{tracknet}, una red neuronal profunda diseñada específicamente para el seguimiento de objetos pequeños de alta velocidad. TrackNet aborda el problema como una tarea de segmentación, generando mapas de probabilidad que indican la posición de la pelota en cada frame. Este enfoque ha demostrado ser especialmente eficaz en deportes como el tenis, donde la pelota ocupa un número muy reducido de píxeles y presenta movimientos rápidos y abruptos. Debido a su robustez y precisión, TrackNet se ha convertido en una referencia ampliamente utilizada en sistemas de análisis de tenis basados en vídeo.
 
-En lo que respecta a la detección de jugadores, numerosos trabajos y aplicaciones prácticas emplean modelos de detección de propósito general basados en aprendizaje profundo, como YOLO o variantes de Faster R-CNN. Estos modelos permiten localizar jugadores de forma eficiente incluso en escenarios complejos, con cambios de iluminación, oclusiones parciales y variaciones de escala. Su uso se ha consolidado como una solución estándar dentro de pipelines de análisis deportivo en tiempo real.
+En lo que respecta a la detección de jugadores, numerosos trabajos y aplicaciones prácticas emplean modelos de detección de propósito general basados en aprendizaje profundo, como YOLO \cite{yolo} o variantes de \textit{Faster R-CNN}. Estos modelos permiten localizar jugadores de forma eficiente incluso en escenarios complejos. Su uso se ha consolidado como una solución estándar dentro de pipelines de análisis deportivo en tiempo real.
 
-La detección de la pista y de sus líneas presenta características particulares que han dado lugar a distintos enfoques en la literatura. Existen propuestas que aplican técnicas de aprendizaje automático para esta tarea, como el trabajo presentado por ML6 \cite{ml6tennislines}, donde se emplean modelos de \textit{machine learning} para mejorar la detección inicial de las líneas de la pista, manteniendo métodos clásicos en fases posteriores del procesamiento. Este tipo de enfoques muestra que las redes neuronales aportan una mayor robustez frente a variaciones de iluminación, sombras u oclusiones parciales, mientras que las técnicas tradicionales permiten preservar la coherencia geométrica del resultado.
+La detección de la pista y de sus líneas presenta características particulares que han dado lugar a distintos enfoques en la literatura. Existen propuestas que aplican técnicas de aprendizaje automático para esta tarea, como el trabajo presentado por ML6 \cite{ml62021court}, donde se emplean modelos de \textit{machine learning} para mejorar la detección inicial de las líneas de la pista, manteniendo métodos clásicos en fases posteriores del procesamiento. Este tipo de enfoques muestra que las redes neuronales aportan una mayor robustez frente a variaciones de iluminación u oclusiones parciales, mientras que las técnicas tradicionales permiten preservar la coherencia geométrica del resultado. En esta línea, destacan implementaciones prácticas de código abierto como las propuestas por Tarek \cite{abdullahtarek2022tennis} y Yastrebkov \cite{yastrebksv2021court}. Estos trabajos adoptan enfoques híbridos que combinan detección basada en aprendizaje profundo con técnicas clásicas de procesamiento de imagen y razonamiento geométrico como la Transformada de Hough. Aunque estos métodos pueden presentar limitaciones en condiciones extremas, ofrecen soluciones eficientes, interpretables y ampliamente utilizadas como referencia en el análisis automático de tenis.
 
-En esta línea, destacan implementaciones prácticas y de código abierto como las propuestas por Tarek \cite{tarek2022tennisanalysis} y Yastrebkov \cite{yastrebkov2021tenniscourtdetector}. Estos trabajos adoptan enfoques híbridos que combinan detección basada en aprendizaje profundo con técnicas clásicas de procesamiento de imagen y razonamiento geométrico como la Transformada de Hough. Aunque estos métodos pueden presentar limitaciones en condiciones extremas, ofrecen soluciones eficientes, interpretables y ampliamente utilizadas como referencia en el análisis automático de tenis.
+En conjunto, los trabajos previos muestran que los enfoques más eficaces para el análisis automático de partidos de tenis no se basan en una única técnica, sino en la combinación de varias tecnicas para conseguir resultados refinados. Esta integración permite aprovechar las fortalezas de varios paradigmas y constituye la base de los sistemas más robustos y coherentes propuestos en la literatura.
 
-En conjunto, los trabajos previos muestran que los enfoques más eficaces para el análisis automático de partidos de tenis no se basan en una única técnica, sino en la combinación de modelos de aprendizaje profundo para la detección y el seguimiento de los elementos dinámicos con métodos clásicos y geométricos para el fortalecimiento de la detección de las estructuras estáticas de la pista. Esta integración permite aprovechar las fortalezas de ambos paradigmas y constituye la base de los sistemas más robustos y coherentes propuestos en la literatura.
+\section{Metodología}
+
+\subsection{Detección de la pista de tenis}
+
+La detección de la pista de tenis se aborda como un problema de localización geométrica de estructuras lineales estáticas dentro de una escena de vídeo. 
+\subsubsection{Enfoque de IA simbólica (Hough Lines)}
 
 
-\section{Methods}
 
-Detailed description of the methods used and/or proposed, and clear justification of why these methods are used and not others.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{bIoU3VcJH38AAAAASUVORK5CYII.png}
+    \caption{Primer enfoque usando tecnicas clasicas}
+    \label{fig:pista_1_mal}
+\end{figure}
+
+El uso exclusivo de métodos geométricos clásicos para la detección de las líneas de la pista presenta diversas limitaciones. Estos enfoques dependen en gran medida de supuestos idealizados, como una buena separación entre líneas y fondo, iluminación homogénea y ausencia de elementos distractores. En la práctica, las variaciones de iluminación, las sombras, los reflejos, etc provocan que las líneas no se destaquen de forma uniforme frente al fondo, dificultando su segmentación mediante umbrales o detectores de bordes.
+
+Además, la perspectiva de la cámara introduce cambios significativos en el grosor y la continuidad aparente de las líneas, especialmente en zonas lejanas, donde estas se vuelven muy finas. En este tipo de situaciones, los detectores basados en bordes y la Transformada de Hough tienden a producir detecciones fragmentadas o incompletas. A esto se suma la interferencia de otros elementos de la escena, como jugadores, red, marcadores gráficos, que generan bordes que no representan lineas reales.
+
+Como resultado, en imágenes complejas, la detección puramente geométrica falla al no ser capaz de discriminar de forma fiable las líneas de la pista. Estas limitaciones ponen de manifiesto la necesidad de complementar los métodos clásicos con técnicas basadas en aprendizaje profundo, que aporten una mayor robustez frente a variaciones visuales y permitan guiar o refinar posteriormente el análisis geométrico.
+
+\subsubsection{Enfoque con CNN, para detección de keypoints}
+
+Posteriormente, se optó por explorar un enfoque alternativo basado en redes neuronales convolucionales, propuesto en ML6 \cite{ml62021court} , en el que una CNN se emplea para estimar directamente la posición de los keypoints de la pista. Este enfoque permite modelar de forma implícita variaciones complejas de iluminación, perspectiva y oclusiones, superando algunas de las limitaciones de los métodos puramente geométricos. 
+
+
+En el artículo mencionado se experimenta con distintas arquitecturas de redes neuronales y configuraciones de entrenamiento, concluyéndose que el modelo que ofrece un mejor equilibrio entre precisión y eficiencia es \textbf{MobileNetV3-Small}. A partir de esta conclusión, se decidió replicar dicho planteamiento como punto de partida, con el objetivo de validar sus resultados y, posteriormente, explorar posibles mejoras.
+
+El entrenamiento para este problema de regresión se realiza mediante una estrategia en dos fases, comenzando con un ajuste de la cabecera del modelo y seguido de un \textit{fine-tuning} completo de la red.
+
+{
+\captionsetup{
+  labelformat=empty,
+  labelsep=none,
+  aboveskip=6pt,
+  belowskip=6pt
+}
+
+\begin{table}[hptb]
+\centering
+\caption{\textsc{Network parameters of the MobileNetV3-Small architecture used for court keypoint detection}}
+\label{t_MobileNetV3}
+
+\small
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{0.9}
+
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Layer & FS & Depth & Padding & Stride & Activation \\
+\hline
+Stem Conv & $3\times3$ & 16 & 1 & 2 & HSW+BN \\
+\hline
+IR Block 1 & $3\times3$ & 16 & 1 & 2 & ReLU / HSW \\
+\hline
+IR Blocks 2--3 & $3\times3$ & 24 & 1 & 2 / 1 & ReLU \\
+\hline
+IR Blocks 4--6 & $3\times3$ & 40 & 1 & 2 / 1 & HSW + SE \\
+\hline
+IR Blocks 7--8 & $3\times3$ & 48 & 1 & 1 & HSW + SE \\
+\hline
+IR Blocks 9--11 & $3\times3$ & 96 & 1 & 2 / 1 & HSW + SE \\
+\hline
+Conv Final & $1\times1$ & 576 & 0 & 1 & HSW + BN \\
+\hline
+Global Pool & \multicolumn{5}{c|}{Adaptive Average Pooling} \\
+\hline
+FC1 & -- & 1024 & -- & -- & HSW \\
+\hline
+Dropout & -- & -- & -- & -- & Dropout \\
+\hline
+Output & -- & 28 & -- & -- & Linear \\
+\hline
+\end{tabular}
+
+\vspace{5pt}
+\parbox{4\linewidth}{\footnotesize
+\textit{Nota: HSW refiere a la función de activación Hard-Swish.}
+}
+
+\end{table}
+}
+
+Si bien los resultados obtenidos mediante \textit{fine-tuning} eran satisfactorios y el modelo era capaz de capturar correctamente los patrones de la pista, se observó que los keypoints estimados no quedaban posicionados con suficiente precisión sobre las intersecciones reales de las líneas \ref{fig:keypoints_sin_refinar} . Esta falta de alineación geométrica provocaba que, al aplicar etapas posteriores basadas en dichos keypoints, los resultados no fueran plenamente fiables ni consistentes. Por este motivo, se consideró necesario introducir una etapa adicional de postprocesado, orientada a corregir y refinar la posición de los keypoints, con el fin de mejorar su coherencia geométrica.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Keypoints_sin_refinar.png}
+    \caption{Keypoints detectados sin refinamiento.}
+    \label{fig:keypoints_sin_refinar}
+\end{figure}
+
+\subsubsection{Enfoque con CNN y postprocesado}
+
+El postrocesado comienza con la extracción de regiones de interés (crops) centradas en keypoints detectados previamente. Estos keypoints proporcionan una aproximación inicial a la localización de las líneas, usamos la red como estimador de posiciones. Cada crop se procesa de forma independiente con el objetivo de refinar la posición del punto mediante la geometría local de las líneas.
+
+En primer lugar, se aplica un preprocesado orientado a la detección de líneas que incluye la reducción del espacio de color, la binarización y una dilatación adaptativa para reforzar la continuidad de las líneas. Posteriormente, se utiliza el algoritmo de afinado de Zhang–Suen para obtener un esqueleto de un solo píxel de grosor, lo que mejora de forma significativa la estabilidad y precisión de la Transformada de Hough al eliminar ambigüedades asociadas a líneas anchas o bordes difusos.
+
+Sobre la imagen afinada se aplica la Transformada de Hough probabilística para detectar segmentos de línea recta, garantizando que las detecciones correspondan a estructuras reales de la pista y no a ruido. Finalmente, las líneas obtenidas se filtran y agrupan según su orientación y proximidad, fusionando aquellas que representan la misma estructura física.
+
+
+Una vez obtenidas las líneas coherentes dentro de cada crop, se calculan sus intersecciones. Estas intersecciones representan puntos geométricamente estables, como cruces o esquinas de las líneas de la pista, y constituyen una referencia mucho más fiable que los keypoints iniciales. Dado que en un mismo crop pueden existir múltiples intersecciones —especialmente en presencia de la red, que es detectada como una línea válida—, se selecciona como punto refinado aquella intersección más cercana al keypoint original. Este criterio de proximidad ha demostrado ser robusto en la mayoría de los casos, incluso en escenarios complejos.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{keypoints afinados.png}
+    \caption{Keypoints CNN: azul - Ketpoints Refinados: rojo}
+    \label{fig:placeholder}
+\end{figure}
+Finalmente, los puntos finales, inicialmente expresados en el sistema de coordenadas local del crop, se transforman al sistema de coordenadas global de la imagen. Con este proceso obtenemos puntos coherentes sobre las que aplicar homografias y calculos posteriores.
+
+\subsection{Homografia de las lineas}
+
+Una vez obtenidos los keypoints correctos, el siguiente paso consiste en proyectar las líneas de la pista sobre la imagen original. Para ello se emplea una homografía, que permite establecer una correspondencia geométrica precisa entre los keypoints detectados en la imagen y una pista de referencia definida en un sistema de coordenadas conocido. Esta transformación modela la deformación proyectiva introducida por la cámara y hace posible trasladar una plantilla ideal de la pista, construida a partir de las dimensiones oficiales del tenis y escalada a píxeles, sobre la escena real. El cálculo de la homografía se realiza mediante \textbf{RANSAC}, lo que permite estimar una transformación robusta incluso en presencia de keypoints erróneos. Gracias a este enfoque, se obtiene una superposición coherente de la pista que no solo facilita la visualización, sino que constituye la base para tareas posteriores como la localización precisa de los jugadores sobre la pista o el cálculo de distancias en escala real.
+
+\subsection{Detección y seguimiento de jugadores}
+
+Una vez obtenida una estimación precisa y geométricamente consistente de la pista de tenis, el siguiente paso del sistema consiste en la detección y el seguimiento de los jugadores a lo largo de la secuencia de vídeo. A diferencia de la detección de la pista, que se basa en estructuras estáticas, esta etapa aborda el análisis de elementos dinámicos, lo que introduce desafíos adicionales relacionados con oclusiones, cambios de postura y variaciones de escala debidas a la perspectiva de la cámara.
+
+La detección inicial se realiza mediante un detector basado en aprendizaje profundo, concretamente el modelo \textbf{YOLO}, entrenado para la detección de objetos en imágenes en tiempo real, y en este caso, de personas. Para cada frame del vídeo, el detector proporciona un conjunto de \textit{bounding boxes} correspondientes a todas las personas visibles, incluyendo tanto a los jugadores como a otros individuos presentes en la pista, como jueces de línea o recogepelotas, lo que se convierte en el principal problema.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{1.png}
+    \caption{Detección de personas con YOLO}
+    \label{fig:deteccion_yolo}
+\end{figure}
+
+Por tanto, la dificultad no reside únicamente en la detección de personas, sino en la selección consistente de los dos tenistas relevantes y en el mantenimiento de su identidad (jugador superior e inferior) a lo largo del clip. Para ello, se exploraron de forma incremental distintos enfoques, analizando sus limitaciones y refinándolos progresivamente hasta alcanzar la estrategia final empleada en el sistema.
+
+
+\subsubsection{Enfoque con filtrado a partir de ROI}
+
+Se introduce un filtrado espacial basado en regiones de interés (\textit{Region of Interest}, ROI). Dado que en las retransmisiones de tenis la cámara suele permanecer aproximadamente fija y la pista ocupa una zona bien definida dentro de la imagen, se asume que los jugadores relevantes aparecen mayoritariamente dentro de dicha región.
+
+Con ello, se define una ROI fija que abarca el área principal de la pista y respeta su forma trapezoidal, descartando automáticamente todas aquellas detecciones de personas situadas fuera de ella.
+
+
+Sin embargo, presenta varias limitaciones. La definición de una ROI fija resulta altamente dependiente del encuadre concreto del vídeo, lo que dificulta su generalización a distintas retransmisiones o a variaciones en el ángulo de cámara. Además, en situaciones como cambios de plano, frames en los que la posición de los tenistas se desvía del patrón habitual o encuadres más abiertos, los jugadores pueden quedar parcial o totalmente fuera de la región definida, provocando pérdidas en la detección.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\linewidth]{roi_falla.png}
+    \caption{Limitaciones con ROI}
+    \label{fig:roi_filtrado_falla}
+\end{figure}
+
+Asimismo, incluso dentro de la ROI continúan apareciendo detecciones no deseadas, como recogepelotas que acceden temporalmente a la pista o jueces visibles en determinados planos. Esto pone de manifiesto que el filtrado puramente espacial no resulta suficiente para garantizar una selección robusta y consistente a variaciones visuales. 
+
+ 
+
+\subsubsection{Enfoque basado en keypoints reales de la pista}
+
+Como alternativa, el uso de la información geométrica proporcionada por los puntos de interés reales de la pista de tenis permite representar posiciones estructurales relevantes del campo y definir referencias directamente ligadas a la geometría del escenario de juego, independientemente de cómo esté situada la cámara.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{kp_reales.png}
+    \caption{Selección de jugadores usando la información geométrica de la pista}
+    \label{fig:kp_reales}
+\end{figure}
+
+Ahora, para cada persona detectada se calcula un punto representativo asociado a su posición en el plano de la imagen, definido a partir del centro de su \textit{bounding box}, y se mide la distancia euclídea entre dicho punto y el conjunto de keypoints de la pista, considerando la distancia mínima como un indicador de cercanía al área de juego. Intuitivamente, se asume que los jugadores relevantes serán aquellos dos individuos cuya distancia mínima a la estructura de la pista sea menor.
+
+No obstante, el comportamiento de esta estrategia se ve condicionado por la distribución espacial de los keypoints de la pista. Al concentrarse principalmente en las líneas laterales, líneas de fondo e intersecciones, pueden darse situaciones en las que personas situadas cerca de estas zonas, como recogepelotas próximos a la red, resulten geométricamente más cercanas a un keypoint que un jugador correctamente posicionado en el interior del campo.
+
+Este efecto se ve reforzado por la perspectiva de la cámara, especialmente en la mitad superior de la pista, donde la compresión visual reduce las distancias aparentes entre elementos externos y la zona de juego. Además, este criterio no garantiza la selección de un jugador por cada mitad del campo, pudiendo asignar ambos candidatos a una misma región en determinados frames.
+
+
+\subsubsection{Enfoque basado en la definición de keypoints virtuales}
+
+Para mejorar la selección de jugadores y evitar las limitaciones asociadas al uso directo de los keypoints reales de la pista, se introduce un enfoque basado en la definición de \textit{keypoints virtuales}. Estos puntos se sitúan en regiones representativas de las zonas donde los jugadores suelen posicionarse durante el juego, concretamente cerca de las líneas de fondo de cada mitad de la pista.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{heatmap.png}
+    \caption{Mapa de calor del patrón habitual de movimiento}
+    \label{fig:heatmap}
+\end{figure}
+
+A partir de estos keypoints virtuales, la asignación de jugadores se formula como un problema de minimización de coste en función de su distancia a estos, obviando los puntos de interés reales y garantizando explícitamente la selección de un jugador por cada mitad del campo.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{kp_virtuales.png}
+    \caption{Selección de jugadores con puntos de interés virtuales}
+    \label{fig:kp_virtuales}
+\end{figure}
+
+Al utilizar referencias geométricas más estables y semánticamente significativas se observan mejoras claras. Sin embargo, los errores persisten principalmente en la mitad superior de la pista, incluso cuando los keypoints virtuales están correctamente definidos. La causa de estas limitaciones radica en que, una vez más, el razonamiento geométrico se realiza en el plano imagen, donde la distancia aparente no refleja la distancia real sobre la pista debido a la perspectiva de la cámara.
+
+\subsubsection{Enfoque basado en homografía inversa}
+
+Trasladar la asignación de jugadores al plano real de la pista mediante el uso de la homografía inversa permite proyectar puntos desde la imagen al sistema de referencia de la pista, donde las distancias, ahora sí,  representan desplazamientos reales y no están afectadas por la perspectiva de la cámara.
+
+El procedimiento de selección es idéntico al del enfoque anterior, aunque en lugar de utilizar el centro geométrico de la \textit{bounding box}, se emplea un punto situado en el centro de su borde inferior, que aproxima la posición real de los pies del jugador sobre la pista, garantizando la validez de la proyección mediante la homografía inversa al ser el punto más representativo con respecto al plano pista.
+
+Al operar en un espacio geométricamente coherente, se elimina en gran medida el impacto distorsionador de la perspectiva, lo que resulta especialmente beneficioso para la mitad superior de la pista, donde los errores eran más frecuentes. Con este proceso la selección de ambos jugadores es más estable y consistente, validando que el uso combinado de keypoints virtuales y homografía inversa constituye la estrategia más robusta dentro del sistema propuesto.
+
+
+\subsection{Tracknet}
+...
+En lugar de predecir directamente las coordenadas $(x,y)$ de la pelota, el problema se formula como una tarea de regresión  mediante mapas de calor (\textit{heatmaps}), donde la máxima activación corresponde a la posición estimada de la pelota en el frame central. 
 
 \section{Experiments}
+{
+\addtocounter{table}{-1}
+\captionsetup{
+  labelformat=empty,
+  labelsep=none,
+  aboveskip=8pt,
+  belowskip=5pt
+}
+\captionof{table}{\textsc{I. DATASET}}
+}
 
-The data used, the experimental validation protocol, the metrics used, the experiments carried out, the results obtained, and their discussion are presented here.
+Para el entrenamiento y la evaluación del sistema se han utilizado dos conjuntos de datos públicos orientados al análisis automático de partidos de tenis a partir de vídeo. En primer lugar, se emplea el \textit{TrackNet Tennis Dataset}\footnote{\url{https://www.kaggle.com/datasets/sofuskonglevoll/tracknet-tennis}}
+\label{fn:tracknet}, compuesto por secuencias de frames con resolución fija de $640 \times 360$ píxeles y anotaciones frame a frame de la posición de la pelota $(x, y)$. 
 
-\subsection{Dataset}
+\begin{center}
+\footnotesize\scshape
+\begin{tabular}{l}
+Game\_01/ \\
+\hspace{1em} Clip\_01/ \\
+\hspace{2em} 0000.jpg \\
+\hspace{2em} 0001.jpg \\
+\hspace{2em} \vdots \\
+\vdots \\
+Game\_02/ \\
+\hspace{1em} Clip\_01/ \\
+\hspace{2em} 0000.jpg \\
+\hspace{2em} \vdots
+\end{tabular}
+\end{center}
 
-\section{Conclusions}
 
-Section that presents, briefly and as a summary, the main conclusions of the work carried out. It also usually includes future possible works. That is, what are the most promising lines to continue with this work, as well as possible proposals for improvement. IMPORTANT: these are the scientific conclusions reached in the project; not your personal conclusions about the work you have done!
+Asimismo, se utiliza el dataset asociado al proyecto \textit{TennisCourtDetector}\footnote{\url{https://github.com/yastrebksv/TennisCourtDetector/tree/main}}, formado por 8\,841 imágenes de resolución $1280 \times 720$ que cubren distintos tipos de superficie e incluyen la anotación de 14 puntos clave por imagen que describen la geometría de la pista.
+
+La combinación de ambos datasets permite evaluar el sistema en escenarios realistas, integrando información dinámica (pelota y jugadores) y estática (pista) dentro de un único pipeline experimental.
+
+{
+\addtocounter{table}{-1}
+\captionsetup{
+  labelformat=empty,
+  labelsep=none,
+  aboveskip=10pt,
+  belowskip=5pt
+}
+\captionof{table}{\textsc{II. PLANTEAMIENTO EXPERIMENTAL}}
+}
+
+\textit{TrackNet Tennis Dataset} se emplea tanto para el entrenamiento del modelo de detección de la pelota como para la evaluación del resto de módulos del sistema sobre clips completos de partidos reales.
+
+La partición de los datos se realiza a nivel de partido (\textit{game}), asignando cada juego completo al conjunto de entrenamiento o validación garantizando que no existan frames del mismo juego en ambos conjuntos. 
+
+{
+\captionsetup{
+  labelformat=empty,
+  labelsep=none,
+  aboveskip=8pt,
+  belowskip=1pt
+}
+
+\begin{table}[H]
+\centering
+\caption{\textsc{Training parameters for TrackNet architecture}}
+\small
+\begin{tabular}{l c}
+\hline
+Parameter & Value \\
+\hline
+Input resolution & $640 \times 360$ \\
+Batch size & 32 \\
+Optimizer & Adam \\
+Initial LR & $1 \times 10^{-4}$ \\
+Epochs & 50 \\
+Loss function & Focal loss (heatmaps) \\
+\hline
+\end{tabular}
+\end{table}
+}
+
+Durante el entrenamiento se aplica \textit{data augmentation} ligero sobre las secuencias de entrada, incluyendo variaciones aleatorias de brillo y contraste, así como la adición de ruido gaussiano, con el objetivo de mejorar la robustez del modelo frente a cambios de iluminación y calidad de imagen.
+
+\vspace{0.5em}
+
+Para mitigar el fuerte desbalance entre el fondo y la región correspondiente a la pelota en los mapas de calor, se utiliza \textit{Focal Loss}, formulada a partir de \textit{Binary Cross-Entropy}, BCE:
+
+\[
+\mathcal{L}_{\text{focal}} = \alpha (1 - p_t)^{\gamma} \, \mathcal{L}_{\text{BCE}},
+\quad \text{con } p_t = \exp(-\mathcal{L}_{\text{BCE}}).
+\]
 
 
+Esta función penaliza con mayor peso los errores en las regiones difíciles y reduce la contribución de los píxeles correctamente clasificados. 
+
+Para la detección de keypoints de la pista, \textit{TennisCourtDetector}  se divide en un $75\%$ para entrenamiento y un $25\%$ para validación, siguiendo la partición propuesta en el dataset original.
+
+{
+\captionsetup{
+  labelformat=empty,
+  labelsep=none,
+  aboveskip=8pt,
+  belowskip=1pt
+}
+
+\begin{table}[H]
+\centering
+\caption{\textsc{Training parameters for court keypoint detection}}
+\small
+\begin{tabular}{l c}
+\hline
+Parameter & Value \\
+\hline
+Input resolution & $480 \times 480$ \\
+Batch size & 16 \\
+Optimizer & Adam \\
+Initial LR & $1 \times 10^{-3}$ \\
+Epochs (head only) & 5 \\
+Epochs (full model) & 20 \\
+Loss function & L1 Loss (MAE) \\
+\hline
+\end{tabular}
+\end{table}
+}
+
+Para evaluarlo el entrenamiento, se mide el error promedio absoluto entre las posiciones predichas por el modelo y las posiciones reales anotadas en el dataset $(MAE)$: 
+
+\begin{equation}
+\mathrm{MAE} = \frac{1}{N} \sum_{i=1}^{N} \left| \hat{y}_i - y_i \right|
+\end{equation}
+
+{
+\addtocounter{table}{-1}
+\captionsetup{
+  labelformat=empty,
+  labelsep=none,
+  aboveskip=10pt,
+  belowskip=5pt
+}
+\captionof{table}{\textsc{III. EXPERIMENTOS Y RESULTADOS}}
+}
+
+Para TrackNet, el comportamiento de la pérdida frente al número de épocas muestra una convergencia estable a lo largo del entrenamiento. El uso de secuencias de tres frames consecutivos como entrada permite explotar la información temporal, mejorando la robustez del modelo frente a trayectorias rápidas y oclusiones parciales.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]
+    {lrs_tracknet.png}
+    \caption{Curva de aprendizaje para TrackNet}
+    \label{fig:lrs}
+\end{figure}
+
+Como se observa en la Fig.~\ref{fig:lrs}, la pérdida de validación se mantiene por debajo de la pérdida de entrenamiento debido al uso de \textit{data augmentation} durante la fase de entrenamiento, cuyo conjunto presenta una mayor dificultad que el conjunto de validación, que se evalúa sin transformaciones.
+
+El entrenamiento se prolonga hasta aproximadamente la época 40, momento en el que se activa el criterio de \textit{early stopping} al no observarse mejoras adicionales en la pérdida de validación. Esta estrategia permite prevenir el sobreajuste y seleccionar un modelo con buena capacidad de generalización.
+
+En el caso de la detección de keypoints de la pista, se evalúa el impacto de distintas estrategias de entrenamiento sobre el modelo. 
+
+{
+\captionsetup{
+  labelformat=empty,
+  labelsep=none,
+  aboveskip=8pt,
+  belowskip=1pt
+}
+
+\begin{table}[h]
+\centering
+\caption{\textsc{Training Results for Court Keypoint Detection}}
+\label{tab:training_loss}
+\small
+\begin{tabular}{l c}
+\hline
+Training Strategy & Final Loss (MAE) \\
+\hline
+From scratch & 12.4700 \\
+Head only & 10.5181 \\
+Full fine-tuning & 7.6267 \\
+\hline
+\end{tabular}
+\end{table}
+}
+
+Los resultados indican que, aun partiendo de pesos preentrenados, la estrategia de entrenamiento influye de forma significativa en el rendimiento final. El ajuste exclusivo de la cabecera produce una mejora limitada, mientras que el entrenamiento completo desde el inicio resulta menos estable. En contraste, el \textit{fine-tuning} progresivo, comenzando por la cabecera y extendiéndose posteriormente a toda la red, alcanza el menor $MAE$.
+
+Este comportamiento evidencia la importancia de una adaptación gradual del modelo, que permite conservar las representaciones generales del preentrenamiento y especializarlas eficazmente en la tarea de localización de la pista.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{lr_court.png}
+    \caption{Curva de aprendizaje para fine-tuning completo}
+    \label{fig:lr_courtt}
+\end{figure}
+
+\section{Conclusiones}
+
+\noindent En este trabajo se ha presentado un sistema para el análisis automático de partidos de tenis a partir de vídeo broadcast, basado en la integración de modelos de aprendizaje profundo con técnicas clásicas de visión por computador y geometría proyectiva. El sistema es capaz de detectar la pista y sus keypoints geométricos, así como de identificar y seguir a los jugadores y la pelota a lo largo de la secuencia de vídeo de forma robusta.
+
+Los resultados experimentales muestran que la combinación de redes neuronales convolucionales con etapas de postprocesado geométrico permite mejorar significativamente la coherencia espacial y la estabilidad de las detecciones frente a enfoques puramente basados en aprendizaje profundo. En particular, el uso de homografías y referencias geométricas de la pista resulta clave para desacoplar el razonamiento espacial de los efectos de la perspectiva de la cámara, permitiendo una asignación de jugadores más fiable y consistente.
+
+Asimismo, el uso de modelos ligeros y representaciones basadas en mapas de calor demuestra que es posible obtener un rendimiento elevado en escenarios reales sin necesidad de vídeo de alta tasa de frames ni resoluciones extremas, reduciendo el coste computacional y facilitando su aplicación práctica.
+
+En conjunto, los experimentos realizados validan la eficacia de un enfoque híbrido para el análisis de vídeo deportivo, sentando una base sólida para futuras extensiones del sistema, como la mejora del seguimiento temporal, la optimización para tiempo real o su adaptación a otros deportes con estructuras geométricas similares.
+
+
+
+\section{Resources}
 
 %%%%%%%%% REFERENCES
 {\small
 \bibliographystyle{ieee_fullname}
 \bibliography{egbib}
 }
+
+
+{
+\captionsetup{
+  labelformat=empty,
+  labelsep=none,
+  aboveskip=6pt,
+  belowskip=6pt
+}
+
+\begin{table}[ptb]
+\centering
+\caption{\textsc{Network parameters of the proposed TrackNet architecture}}
+\label{t_TrackNet}
+\small
+\setlength{\tabcolsep}{5pt}
+
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Layer & Filter Size & Depth & Padding & Stride & Activation \\
+\hline
+Conv1-1 & $3\times3$ & 64 & 1 & 1 & ReLU+BN \\
+Conv1-2 & $3\times3$ & 64 & 1 & 1 & ReLU+BN \\
+\hline
+Pool1 & \multicolumn{5}{c|}{$2\times2$ max pooling and \textit{Stride}=2} \\
+\hline
+Conv2-1 & $3\times3$ & 128 & 1 & 1 & ReLU+BN \\
+Conv2-2 & $3\times3$ & 128 & 1 & 1 & ReLU+BN \\
+\hline
+Pool2 & \multicolumn{5}{c|}{$2\times2$ max pooling and \textit{Stride}=2} \\
+\hline
+Conv3-1 & $3\times3$ & 256 & 1 & 1 & ReLU+BN \\
+Conv3-2 & $3\times3$ & 256 & 1 & 1 & ReLU+BN \\
+\hline
+Pool3 & \multicolumn{5}{c|}{$2\times2$ max pooling and \textit{Stride}=2} \\
+\hline
+Bneck-1 & $3\times3$ & 512 & 1 & 1 & ReLU+BN \\
+Bneck-2 & $3\times3$ & 512 & 1 & 1 & ReLU+BN \\
+\hline
+UpS1 & \multicolumn{5}{c|}{$2\times2$ bilinear upsampling} \\
+\hline
+Conv5-1 & $3\times3$ & 256 & 1 & 1 & ReLU+BN \\
+Conv5-2 & $3\times3$ & 256 & 1 & 1 & ReLU+BN \\
+\hline
+UpS2 & \multicolumn{5}{c|}{$2\times2$ bilinear upsampling} \\
+\hline
+Conv6-1 & $3\times3$ & 128 & 1 & 1 & ReLU+BN \\
+Conv6-2 & $3\times3$ & 128 & 1 & 1 & ReLU+BN \\
+\hline
+UpS3 & \multicolumn{5}{c|}{$2\times2$ bilinear upsampling} \\
+\hline
+Conv7-1 & $3\times3$ & 64 & 1 & 1 & ReLU+BN \\
+Conv7-2 & $3\times3$ & 64 & 1 & 1 & ReLU+BN \\
+\hline
+Output & $1\times1$ & 1 & 0 & 1 & Linear \\
+\hline
+\end{tabular}
+\end{table}
+}
+
+
 
 \end{document}
