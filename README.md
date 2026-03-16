@@ -153,8 +153,9 @@ El sistema integra todos los módulos para generar un vídeo final con:
 
 Vídeo Demo:
 
-[Ver demo completa](INSERTAR_LINK_A_VIDEO)
+![Ver demo completa](INSERTAR_LINK_A_VIDEO)
 
+---
 
 #Tecnologías Utilizadas
 
@@ -167,6 +168,8 @@ Vídeo Demo:
 -RANSAC
 -Hough Transform
 
+---
+
 #Resultados
 
 -Error medio keypoints: ~7–8 píxeles
@@ -174,6 +177,7 @@ Vídeo Demo:
 -Reducción significativa de falsos positivos tras postprocesado
 -Proyección geométrica coherente en plano real
 
+---
 
 #Autores:
 Marino Fernandez Pérez, Pau Bover Femenias , Francesc Oliver Catany, Gabriele Ruggeri
